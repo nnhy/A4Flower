@@ -56,10 +56,13 @@ public class Worker : IHostedService
             var buzzer = _a4.Buzzer;
             var usb = _a4.UsbPower;
 
-            var t = _setting.BuzzerTime > 0 ? _setting.BuzzerTime : 200;
-            buzzer.Write(true);
-            Thread.Sleep(t);
-            buzzer.Write(false);
+            var t = _setting.BuzzerTime;
+            if (t > 0)
+            {
+                buzzer.Write(true);
+                Thread.Sleep(t);
+                buzzer.Write(false);
+            }
 
             t = _setting.UsbTime > 0 ? _setting.UsbTime : 3000;
             usb.Write(true);
@@ -73,5 +76,7 @@ public class Worker : IHostedService
         }
 
         XTrace.WriteLine("关闭电源");
+
+        if (_setting.Period > 0) _timer.Period = _setting.Period * 1000;
     }
 }
