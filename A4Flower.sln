@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.32112.339
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{719C113A-6804-4150-8473-BF889F06DFD6}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		Readme.MD = Readme.MD
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "A4Flower", "A4Flower\A4Flower.csproj", "{6AA6FD51-0200-4A0C-B4BE-CF84793B425D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6AA6FD51-0200-4A0C-B4BE-CF84793B425D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6AA6FD51-0200-4A0C-B4BE-CF84793B425D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6AA6FD51-0200-4A0C-B4BE-CF84793B425D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6AA6FD51-0200-4A0C-B4BE-CF84793B425D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {323831A1-A95B-40AB-B9AD-36A0BC10C2CB}
+	EndGlobalSection
+EndGlobal
