@@ -22,7 +22,6 @@
   <ItemGroup>
     <PackageReference Include="NewLife.Core" Version="10.5.2023.801" />
     <PackageReference Include="NewLife.Stardust" Version="2.9.2023.801" />
-    <PackageReference Include="SmartA4" Version="1.0.2023.519" />
   </ItemGroup>
 
 </Project>
