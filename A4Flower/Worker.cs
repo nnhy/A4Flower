@@ -13,6 +13,7 @@ namespace A4Flower;
 public class Worker : IHostedService
 {
     private readonly A4 _a4;
+    private readonly IConfigProvider _configProvider;
     private FlowerSetting _setting = new();
     private readonly ITracer _tracer;
     private TimerX _timer;
@@ -20,21 +21,30 @@ public class Worker : IHostedService
     public Worker(A4 a4, IConfigProvider configProvider, ITracer tracer)
     {
         _a4 = a4;
+        _configProvider = configProvider;
         _tracer = tracer;
-
-        // 绑定参数到配置中心，支持热更新
-        if (configProvider.Keys.Count < 3)
-            configProvider.Save(_setting);
-        else
-            configProvider.Bind(_setting, true, null);
     }
 
     public Task StartAsync(CancellationToken cancellationToken)
     {
+        try
+        {
+            // 绑定参数到配置中心，支持热更新
+            _configProvider.LoadAll();
+            if (_configProvider.Keys.Count < 3)
+                _configProvider.Save(_setting);
+            else
+                _configProvider.Bind(_setting, true, null);
+        }
+        catch (Exception ex)
+        {
+            XTrace.WriteException(ex);
+        }
+
         var p = _setting.Period;
         if (p <= 0) p = 3600;
 
-        _timer = new TimerX(DoWork, null, 0, p * 1000);
+        _timer = new TimerX(DoWork, null, 0, p * 1000) { Async = true };
 
         return Task.CompletedTask;
     }
