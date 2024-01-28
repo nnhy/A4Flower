@@ -16,6 +16,7 @@ public class Worker : IHostedService
     private readonly IConfigProvider _configProvider;
     private FlowerSetting _setting = new();
     private readonly ITracer _tracer;
+    private String _cron;
     private TimerX _timer;
 
     public Worker(A4 a4, IConfigProvider configProvider, ITracer tracer)
@@ -41,10 +42,16 @@ public class Worker : IHostedService
             XTrace.WriteException(ex);
         }
 
-        var p = _setting.Period;
-        if (p <= 0) p = 3600;
+        //var p = _setting.Period;
+        //if (p <= 0) p = 3600;
 
-        _timer = new TimerX(DoWork, null, 0, p * 1000) { Async = true };
+        //_timer = new TimerX(DoWork, null, 0, p * 1000) { Async = true };
+
+        if (!_setting.Cron.IsNullOrEmpty())
+        {
+            _timer = new TimerX(DoWork, null, _setting.Cron) { Async = true };
+            _cron = _setting.Cron;
+        }
 
         return Task.CompletedTask;
     }
@@ -87,6 +94,12 @@ public class Worker : IHostedService
 
         XTrace.WriteLine("关闭电源");
 
-        if (_setting.Period > 0) _timer.Period = _setting.Period * 1000;
+        // 定时时间有改变
+        //if (_setting.Period > 0) _timer.Period = _setting.Period * 1000;
+        if (!_setting.Cron.IsNullOrEmpty() && _setting.Cron != _cron)
+        {
+            _timer = new TimerX(DoWork, null, _setting.Cron) { Async = true };
+            _cron = _setting.Cron;
+        }
     }
 }
