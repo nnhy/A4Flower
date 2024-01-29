@@ -17,7 +17,7 @@ public class Worker : IHostedService
     private FlowerSetting _setting = new();
     private readonly ITracer _tracer;
     private String _cron;
-    private TimerX _timer;
+    private TimerX[] _timers;
 
     public Worker(A4 a4, IConfigProvider configProvider, ITracer tracer)
     {
@@ -49,16 +49,30 @@ public class Worker : IHostedService
 
         if (!_setting.Cron.IsNullOrEmpty())
         {
-            _timer = new TimerX(DoWork, null, _setting.Cron) { Async = true };
             _cron = _setting.Cron;
+            SetTimer(_cron);
         }
 
         return Task.CompletedTask;
     }
 
+    private void SetTimer(String cron)
+    {
+        _timers.TryDispose();
+
+        // 支持多个Cron表达式，分号隔开
+        var ts = new List<TimerX>();
+        foreach (var item in cron.Split(";"))
+        {
+            ts.Add(new TimerX(DoWork, null, item) { Async = true });
+        }
+
+        _timers = ts.ToArray();
+    }
+
     public Task StopAsync(CancellationToken cancellationToken)
     {
-        _timer.TryDispose();
+        _timers.TryDispose();
 
         return Task.CompletedTask;
     }
@@ -98,8 +112,8 @@ public class Worker : IHostedService
         //if (_setting.Period > 0) _timer.Period = _setting.Period * 1000;
         if (!_setting.Cron.IsNullOrEmpty() && _setting.Cron != _cron)
         {
-            _timer = new TimerX(DoWork, null, _setting.Cron) { Async = true };
             _cron = _setting.Cron;
+            SetTimer(_cron);
         }
     }
 }

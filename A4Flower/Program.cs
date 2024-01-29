@@ -16,8 +16,9 @@ services.AddStardust();
 services.AddSingleton<A4, A4>();
 
 // 注册后台任务 IHostedService
+services.AddHostedService<Worker>();
+
 var host = services.BuildHost();
-host.Add<Worker>();
 
 // 异步阻塞，友好退出
 await host.RunAsync();

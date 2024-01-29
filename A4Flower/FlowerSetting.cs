@@ -10,8 +10,8 @@ internal class FlowerSetting
     [Description("定时周期。默认3600秒")]
     public Int32 Period { get; set; } = 3600;
 
-    /// <summary>定时表达式。默认0 30 8-18 * * ? *，每天8到18点的30分执行</summary>
-    [Description("定时表达式。默认0 30 8-18 * * ? *，每天8到18点的30分执行")]
+    /// <summary>定时表达式。支持多个表达式（分号隔开），默认0 30 8-18 * * ? *，每天8到18点的30分执行</summary>
+    [Description("定时表达式。支持多个表达式（分号隔开），默认0 30 8-18 * * ? *，每天8到18点的30分执行")]
     public String Cron { get; set; } = "0 30 8-18 * * ? *";
 
     /// <summary>
