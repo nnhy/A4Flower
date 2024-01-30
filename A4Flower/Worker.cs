@@ -4,6 +4,9 @@ using NewLife.Log;
 using NewLife.Model;
 using NewLife.Threading;
 using SmartA4;
+using Stardust;
+using Stardust.Registry;
+using Stardust.Services;
 
 namespace A4Flower;
 
@@ -13,15 +16,17 @@ namespace A4Flower;
 public class Worker : IHostedService
 {
     private readonly A4 _a4;
+    private readonly AppClient _appClient;
     private readonly IConfigProvider _configProvider;
     private FlowerSetting _setting = new();
     private readonly ITracer _tracer;
     private String _cron;
     private TimerX[] _timers;
 
-    public Worker(A4 a4, IConfigProvider configProvider, ITracer tracer)
+    public Worker(A4 a4, IRegistry registry, IConfigProvider configProvider, ITracer tracer)
     {
         _a4 = a4;
+        _appClient = registry as AppClient;
         _configProvider = configProvider;
         _tracer = tracer;
     }
@@ -36,6 +41,12 @@ public class Worker : IHostedService
                 _configProvider.Save(_setting);
             else
                 _configProvider.Bind(_setting, true, null);
+
+            _appClient?.RegisterCommand("test", s => DoWork(s));
+
+            // 关闭
+            var usb = _a4.UsbPower;
+            usb.Write(false);
         }
         catch (Exception ex)
         {
@@ -60,14 +71,21 @@ public class Worker : IHostedService
     {
         _timers.TryDispose();
 
+        var next = DateTime.MinValue;
+
         // 支持多个Cron表达式，分号隔开
         var ts = new List<TimerX>();
         foreach (var item in cron.Split(";"))
         {
-            ts.Add(new TimerX(DoWork, null, item) { Async = true });
+            var timer = new TimerX(DoWork, null, item) { Async = true };
+            ts.Add(timer);
+
+            if (next == DateTime.MinValue || next < timer.NextTime) next = timer.NextTime;
         }
 
         _timers = ts.ToArray();
+
+        if (next > DateTime.MinValue) XTrace.WriteLine("下一次执行时间：{0}", next.ToFullString());
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
