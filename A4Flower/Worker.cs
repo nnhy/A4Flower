@@ -7,7 +7,6 @@ using NewLife.Threading;
 using SmartA4;
 using Stardust;
 using Stardust.Registry;
-using Stardust.Services;
 
 namespace A4Flower;
 
@@ -19,10 +18,9 @@ public class Worker : IHostedService
     private readonly A4 _a4;
     private readonly AppClient _appClient;
     private readonly IConfigProvider _configProvider;
-    private FlowerSetting _setting = new();
+    private readonly FlowerSetting _setting = new();
     private readonly ITracer _tracer;
-    private String _cron;
-    private TimerX[] _timers;
+    private TimerX _timer;
 
     public Worker(A4 a4, IRegistry registry, IConfigProvider configProvider, ITracer tracer)
     {
@@ -54,44 +52,33 @@ public class Worker : IHostedService
             XTrace.WriteException(ex);
         }
 
-        //var p = _setting.Period;
-        //if (p <= 0) p = 3600;
-
-        //_timer = new TimerX(DoWork, null, 0, p * 1000) { Async = true };
-
-        if (!_setting.Cron.IsNullOrEmpty())
-        {
-            _cron = _setting.Cron;
-            SetTimer(_cron);
-        }
+        SetTimer(_setting.Cron);
 
         return Task.CompletedTask;
     }
 
+    private String _cron;
     private void SetTimer(String cron)
     {
-        _timers.TryDispose();
+        if (cron == _cron) return;
 
-        var next = DateTime.MinValue;
+        _timer.TryDispose();
 
-        // 支持多个Cron表达式，分号隔开
-        var ts = new List<TimerX>();
-        foreach (var item in cron.Split(";"))
+        if (!cron.IsNullOrEmpty())
         {
-            var timer = new TimerX(DoWork, null, item) { Async = true };
-            ts.Add(timer);
+            // 支持多个Cron表达式，分号隔开
+            var timer = _timer = new TimerX(DoWork, null, cron) { Async = true };
 
-            if (next == DateTime.MinValue || next < timer.NextTime) next = timer.NextTime;
+            var next = timer.NextTime;
+            if (next > DateTime.MinValue) XTrace.WriteLine("下一次执行时间：{0}", next.ToFullString());
         }
 
-        _timers = ts.ToArray();
-
-        if (next > DateTime.MinValue) XTrace.WriteLine("下一次执行时间：{0}", next.ToFullString());
+        _cron = cron;
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
     {
-        _timers.TryDispose();
+        _timer.TryDispose();
 
         return Task.CompletedTask;
     }
@@ -128,11 +115,6 @@ public class Worker : IHostedService
         XTrace.WriteLine("关闭电源");
 
         // 定时时间有改变
-        //if (_setting.Period > 0) _timer.Period = _setting.Period * 1000;
-        if (!_setting.Cron.IsNullOrEmpty() && _setting.Cron != _cron)
-        {
-            _cron = _setting.Cron;
-            SetTimer(_cron);
-        }
+        SetTimer(_setting.Cron);
     }
 }
