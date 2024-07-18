@@ -2,6 +2,7 @@
 using NewLife.Configuration;
 using NewLife.Log;
 using NewLife.Model;
+using NewLife.Remoting.Clients;
 using NewLife.Threading;
 using SmartA4;
 using Stardust;
